@@ -108,7 +108,7 @@ lua_services.append({
 lua_services.append({
         "name": "Cable Channel Info",
         "os_min_versions": "7.29",
-        "os_max_versions": "7.57",
+        "os_max_versions": "7.56",
         "method": "POST",
         "params": {
             "page": "docInfo",
@@ -344,7 +344,7 @@ lua_services.append({
 
 lua_services.append({
         "name": "Cable Channel Info",
-        "os_min_versions": "7.58",
+        "os_min_versions": "7.57",
         "method": "POST",
         "params": {
             "page": "docInfo",
