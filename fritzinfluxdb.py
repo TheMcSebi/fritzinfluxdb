@@ -141,9 +141,18 @@ def main():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    for fb_signal in [signal.SIGHUP, signal.SIGTERM, signal.SIGINT]:
-        loop.add_signal_handler(
-            fb_signal, lambda s=fb_signal: asyncio.create_task(shutdown(s, loop, log)))
+    # Set up signal handlers - Windows compatible
+    if os.name != 'nt':  # Unix-like systems
+        for fb_signal in [signal.SIGHUP, signal.SIGTERM, signal.SIGINT]:
+            loop.add_signal_handler(
+                fb_signal, lambda s=fb_signal: asyncio.create_task(shutdown(s, loop, log)))
+    else:  # Windows
+        # On Windows, we can only handle SIGINT (Ctrl+C) and SIGTERM
+        def signal_handler(sig, frame):
+            asyncio.create_task(shutdown(signal.Signals(sig), loop, log))
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
     queue = asyncio.Queue()
 
