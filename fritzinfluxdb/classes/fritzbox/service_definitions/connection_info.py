@@ -28,6 +28,22 @@ def exclude_filter_docsis31(data):
     return "docsis31" not in grab(data, "data.channelDs", fallback={}).keys()
 
 
+def exclude_filter_fiber_no_optical_data(data):
+    """
+    Filter to exclude fiber data when optical power information is not available
+    """
+    optical_data = grab(data, "data.opticalPower", fallback={})
+    return not optical_data or (not optical_data.get("receive") and not optical_data.get("transmit"))
+
+
+def exclude_filter_fiber_no_error_data(data):
+    """
+    Filter to exclude fiber data when error information is not available
+    """
+    error_data = grab(data, "data.errors", fallback={})
+    return not error_data
+
+
 lua_services.append({
         "name": "DSL Info",
         "os_min_versions": "7.29",
@@ -592,6 +608,117 @@ lua_services.append({
                 },
                 "exclude_filter_function": exclude_filter_docsis30
             },
+        }
+    }
+)
+
+lua_services.append({
+        "name": "Fiber Info",
+        "os_min_versions": "7.29",
+        "method": "POST",
+        "params": {
+            "page": "overview",
+            "xhrId": "all",
+            "xhr": 1,
+            "useajax": 1
+        },
+        "link_type": FritzBoxLinkTypes.Fiber,
+        "response_parser": prepare_json_response_data,
+        "interval": 600,
+        "value_instances": {
+            "fiber_connection_status": {
+                "data_path": "data.fiber.txt",
+                "type": str
+            },
+            "fiber_upstream_rate": {
+                "data_path": "data.fiber.up",
+                "type": int
+            },
+            "fiber_downstream_rate": {
+                "data_path": "data.fiber.down",
+                "type": int
+            },
+            "fiber_connection_led_status": {
+                "data_path": "data.fiber.led",
+                "type": str
+            },
+            "fiber_diag_active": {
+                "data_path": "data.fiber.diag_active",
+                "type": bool
+            }
+        }
+    }
+)
+
+lua_services.append({
+        "name": "Fiber Connection Details",
+        "os_min_versions": "7.29",
+        "method": "POST",
+        "params": {
+            "page": "overview",
+            "xhrId": "all",
+            "xhr": 1
+        },
+        "link_type": FritzBoxLinkTypes.Fiber,
+        "response_parser": prepare_json_response_data,
+        "interval": 300,
+        "value_instances": {
+            "fiber_medium_upstream": {
+                "data_path": "data.internet.connections.0.medium_upstream",
+                "type": int
+            },
+            "fiber_medium_downstream": {
+                "data_path": "data.internet.connections.0.medium_downstream",
+                "type": int
+            },
+            "fiber_actual_downstream": {
+                "data_path": "data.internet.connections.0.downstream",
+                "type": float
+            },
+            "fiber_actual_upstream": {
+                "data_path": "data.internet.connections.0.upstream",
+                "type": int
+            },
+            "fiber_provider": {
+                "data_path": "data.internet.connections.0.provider",
+                "type": str
+            },
+            "fiber_provider_id": {
+                "data_path": "data.internet.connections.0.provider_id",
+                "type": str
+            },
+            "fiber_connection_state": {
+                "data_path": "data.internet.connections.0.state",
+                "type": str
+            },
+            "fiber_connection_active": {
+                "data_path": "data.internet.connections.0.active",
+                "type": bool
+            },
+            "fiber_connection_connected": {
+                "data_path": "data.internet.connections.0.connected",
+                "type": bool
+            },
+            "fiber_shapedrate": {
+                "data_path": "data.internet.connections.0.shapedrate",
+                "type": bool
+            },
+            "fiber_ipv4_connected": {
+                "data_path": "data.internet.connections.0.ipv4.connected",
+                "type": bool
+            },
+            "fiber_ipv4_ip": {
+                "data_path": "data.internet.connections.0.ipv4.ip",
+                "type": str
+            },
+            "fiber_ipv6_connected": {
+                "data_path": "data.internet.connections.0.ipv6.connected",
+                "type": bool
+            },
+            "fiber_ipv6_ip": {
+                "data_path": "data.internet.connections.0.ipv6.ip",
+                "type": str
+            }
         }
     }
 )
